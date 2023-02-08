@@ -30,13 +30,14 @@
 		app:showAsAction="ifRoom">
 
 		<menu>
-			<item android:id="@+id/filter_uuid"
+			<item android:id="@+id/filter_bond"
 				android:checkable="true"
-				android:checked="true"
-				android:title="@string/menu_filter_uuid"/>
+				android:checked="false"
+				android:title="@string/menu_filter_bond"/>
 
 			<item android:id="@+id/filter_nearby"
 				android:checkable="true"
+				android:checked="false"
 				android:title="@string/menu_filter_nearby"/>
 		</menu>
 	</item>

@@ -21,10 +21,21 @@
   ~ USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
   -->
 
-<manifest package="no.nordicsemi.android.blinky"
+<manifest package="no.nordicsemi.android.wearable"
 	xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:tools="http://schemas.android.com/tools">
 
+	<!-- Permission for the Android below 11 (R) -->
+	<uses-permission
+		android:name="android.permission.READ_EXTERNAL_STORAGE"
+		android:maxSdkVersion="29"/>
+	<uses-permission
+		android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+		android:maxSdkVersion="29"/>
+
+	<!-- Permission for the Android 11 (R) or above-->
+	<uses-permission
+		android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
 	<!--
 	 Bluetooth permission is required on Android 4.3 - 11 in order to communicate with
 	 Bluetooth LE devices.
@@ -80,7 +91,7 @@
 	</queries>
 
 	<application
-		android:name=".BlinkyApplication"
+		android:name=".WearableApplication"
 		android:allowBackup="true"
 		android:fullBackupContent="true"
 		android:icon="@mipmap/ic_launcher"
@@ -101,7 +112,7 @@
 		</activity>
 
 		<!--
-		 This activity alias is used to allow opening nRF Blinky from nRF Toolbox.
+		 This activity alias is used to allow opening WEDO Wearable from nRF Toolbox.
 		 This is not required if this feature is not desired.
 		 nRF Toolbox is displaying a different name and an icon, which are taken from this alias.
 		-->
@@ -119,7 +130,7 @@
 		</activity-alias>
 
 		<activity
-			android:name=".BlinkyActivity"
+			android:name=".WearableActivity"
 			android:launchMode="singleTop"
 			android:parentActivityName=".ScannerActivity">
 		</activity>

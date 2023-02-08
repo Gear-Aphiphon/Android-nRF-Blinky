@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.utils;
+package no.nordicsemi.android.wearable.utils;
 
 import android.Manifest;
 import android.app.Activity;
@@ -59,7 +59,7 @@ public class Utils {
 	 * @return Whether Bluetooth Scan permission has been granted.
 	 */
 	public static boolean isBluetoothScanPermissionGranted(@NonNull final Context context) {
-		if (!isSorAbove())
+		if (!isSnowConeOrAbove())
 			return true;
 		return ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_SCAN)
 				== PackageManager.PERMISSION_GRANTED;
@@ -72,7 +72,7 @@ public class Utils {
 	 * @return Whether Bluetooth Connect permission has been granted.
 	 */
 	public static boolean isBluetoothConnectPermissionGranted(@NonNull final Context context) {
-		if (!isSorAbove())
+		if (!isSnowConeOrAbove())
 			return true;
 		return ContextCompat.checkSelfPermission(context, Manifest.permission.BLUETOOTH_CONNECT)
 				== PackageManager.PERMISSION_GRANTED;
@@ -87,7 +87,7 @@ public class Utils {
 	 */
 	public static boolean isLocationPermissionRequired() {
 		// Location is required only for Android 6-11.
-		return isMarshmallowOrAbove() && !isSorAbove();
+		return isMarshmallowOrAbove() && !isSnowConeOrAbove();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class Utils {
 	 */
 	public static boolean isLocationRequired(@NonNull final Context context) {
 		final SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
-		return preferences.getBoolean(PREFS_LOCATION_REQUIRED, isMarshmallowOrAbove() && !isSorAbove());
+		return preferences.getBoolean(PREFS_LOCATION_REQUIRED, isMarshmallowOrAbove() && !isSnowConeOrAbove());
 	}
 
 	/**
@@ -213,7 +213,11 @@ public class Utils {
 		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.M;
 	}
 
-	public static boolean isSorAbove() {
+	public static boolean isRedVelvetOrAbove() {
+		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
+	}
+
+	public static boolean isSnowConeOrAbove() {
 		return Build.VERSION.SDK_INT >= Build.VERSION_CODES.S;
 	}
 }

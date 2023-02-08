@@ -20,32 +20,35 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky;
+package no.nordicsemi.android.wearable;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 
 import com.google.android.material.appbar.MaterialToolbar;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
 import no.nordicsemi.android.ble.livedata.state.ConnectionState;
 import no.nordicsemi.android.ble.observer.ConnectionObserver;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.databinding.ActivityBlinkyBinding;
-import no.nordicsemi.android.blinky.viewmodels.BlinkyViewModel;
+import no.nordicsemi.android.wearable.adapter.DiscoveredBluetoothDevice;
+import no.nordicsemi.android.wearable.databinding.ActivityWearableBinding;
+import no.nordicsemi.android.wearable.viewmodels.WearableViewModel;
 
-public class BlinkyActivity extends AppCompatActivity {
-	public static final String EXTRA_DEVICE = "no.nordicsemi.android.blinky.EXTRA_DEVICE";
+public class WearableActivity extends AppCompatActivity {
+	public static final String EXTRA_DEVICE = "no.nordicsemi.android.wearable.EXTRA_DEVICE";
 
-	private BlinkyViewModel viewModel;
-	private ActivityBlinkyBinding binding;
+	private WearableViewModel viewModel;
+	private ActivityWearableBinding binding;
 
 	@Override
 	protected void onCreate(final Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		binding = ActivityBlinkyBinding.inflate(getLayoutInflater());
+		binding = ActivityWearableBinding.inflate(getLayoutInflater());
 		setContentView(binding.getRoot());
 
 		final Intent intent = getIntent();
@@ -60,11 +63,16 @@ public class BlinkyActivity extends AppCompatActivity {
 		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
 		// Configure the view model.
-		viewModel = new ViewModelProvider(this).get(BlinkyViewModel.class);
+		viewModel = new ViewModelProvider(this).get(WearableViewModel.class);
 		viewModel.connect(device);
 
+		final ActivityResultLauncher<String> createDocument =
+				registerForActivityResult(new ActivityResultContracts.CreateDocument(),
+						result -> viewModel.onCreateFile(result)
+				);
+		createDocument.launch("TEST.txt");
+
 		// Set up views.
-		binding.ledSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> viewModel.setLedState(isChecked));
 		binding.infoNotSupported.actionRetry.setOnClickListener(v -> viewModel.reconnect());
 		binding.infoTimeout.actionRetry.setOnClickListener(v -> viewModel.reconnect());
 
@@ -82,7 +90,6 @@ public class BlinkyActivity extends AppCompatActivity {
 				case READY:
 					binding.progressContainer.setVisibility(View.GONE);
 					binding.deviceContainer.setVisibility(View.VISIBLE);
-					onConnectionStateChanged(true);
 					break;
 				case DISCONNECTED:
 					if (state instanceof ConnectionState.Disconnected) {
@@ -97,24 +104,8 @@ public class BlinkyActivity extends AppCompatActivity {
 					}
 					// fallthrough
 				case DISCONNECTING:
-					onConnectionStateChanged(false);
 					break;
 			}
 		});
-		viewModel.getLedState().observe(this, isOn -> {
-			binding.ledState.setText(isOn ? R.string.turn_on : R.string.turn_off);
-			binding.ledSwitch.setChecked(isOn);
-		});
-		viewModel.getButtonState().observe(this,
-				pressed -> binding.buttonState.setText(pressed ?
-						R.string.button_pressed : R.string.button_released));
-	}
-
-	private void onConnectionStateChanged(final boolean connected) {
-		binding.ledSwitch.setEnabled(connected);
-		if (!connected) {
-			binding.ledSwitch.setChecked(false);
-			binding.buttonState.setText(R.string.button_unknown);
-		}
 	}
 }

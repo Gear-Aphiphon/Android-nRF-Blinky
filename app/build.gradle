@@ -5,7 +5,7 @@ android {
     compileSdkVersion 31
 
     defaultConfig {
-        applicationId "no.nordicsemi.android.nrfblinky"
+        applicationId "no.nordicsemi.android.wedowearable"
         minSdkVersion 18
         targetSdkVersion 31
         versionCode getVersionCodeFromTags()

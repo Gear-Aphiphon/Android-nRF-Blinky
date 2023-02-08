@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package no.nordicsemi.android.wearable.viewmodels;
 
 import android.app.Application;
 import android.bluetooth.BluetoothAdapter;
@@ -37,15 +37,15 @@ import java.util.List;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
-import no.nordicsemi.android.blinky.utils.FilterUtils;
-import no.nordicsemi.android.blinky.utils.Utils;
+import no.nordicsemi.android.wearable.utils.FilterUtils;
+import no.nordicsemi.android.wearable.utils.Utils;
 import no.nordicsemi.android.support.v18.scanner.BluetoothLeScannerCompat;
 import no.nordicsemi.android.support.v18.scanner.ScanCallback;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 import no.nordicsemi.android.support.v18.scanner.ScanSettings;
 
 public class ScannerViewModel extends AndroidViewModel {
-	private static final String PREFS_FILTER_UUID_REQUIRED = "filter_uuid";
+	private static final String PREFS_FILTER_BOND_REQUIRED = "filter_bond";
 	private static final String PREFS_FILTER_NEARBY_ONLY = "filter_nearby";
 
 	/**
@@ -71,12 +71,12 @@ public class ScannerViewModel extends AndroidViewModel {
 		super(application);
 		preferences = PreferenceManager.getDefaultSharedPreferences(application);
 
-		final boolean filterUuidRequired = isUuidFilterEnabled();
+		final boolean filterBondRequired = isBondFilterEnabled();
 		final boolean filerNearbyOnly = isNearbyFilterEnabled();
 
 		scannerStateLiveData = new ScannerStateLiveData(Utils.isBleEnabled(),
 				Utils.isLocationEnabled(application));
-		devicesLiveData = new DevicesLiveData(filterUuidRequired, filerNearbyOnly);
+		devicesLiveData = new DevicesLiveData(filterBondRequired, filerNearbyOnly);
 		registerBroadcastReceivers(application);
 	}
 
@@ -86,8 +86,8 @@ public class ScannerViewModel extends AndroidViewModel {
 		unregisterBroadcastReceivers(getApplication());
 	}
 
-	public boolean isUuidFilterEnabled() {
-		return preferences.getBoolean(PREFS_FILTER_UUID_REQUIRED, true);
+	public boolean isBondFilterEnabled() {
+		return preferences.getBoolean(PREFS_FILTER_BOND_REQUIRED, true);
 	}
 
 	public boolean isNearbyFilterEnabled() {
@@ -97,7 +97,7 @@ public class ScannerViewModel extends AndroidViewModel {
 	/**
 	 * Forces the observers to be notified. This method is used to refresh the screen after the
 	 * location permission has been granted. In result, the observer in
-	 * {@link no.nordicsemi.android.blinky.ScannerActivity} will try to start scanning.
+	 * {@link no.nordicsemi.android.wearable.ScannerActivity} will try to start scanning.
 	 */
 	public void refresh() {
 		scannerStateLiveData.refresh();
@@ -116,12 +116,12 @@ public class ScannerViewModel extends AndroidViewModel {
 	 * even if they move away from the phone, or change the advertising packet. This is to
 	 * avoid removing devices from the list.
 	 *
-	 * @param uuidRequired if true, the list will display only devices with Led-Button Service UUID
+	 * @param bondRequired if true, the list will display only devices with Led-Button Service UUID
 	 *                     in the advertising packet.
 	 */
-	public void filterByUuid(final boolean uuidRequired) {
-		preferences.edit().putBoolean(PREFS_FILTER_UUID_REQUIRED, uuidRequired).apply();
-		if (devicesLiveData.filterByUuid(uuidRequired))
+	public void filterByBond(final boolean bondRequired) {
+		preferences.edit().putBoolean(PREFS_FILTER_BOND_REQUIRED, bondRequired).apply();
+		if (devicesLiveData.filterByBond(bondRequired))
 			scannerStateLiveData.recordFound();
 		else
 			scannerStateLiveData.clearRecords();
@@ -153,7 +153,7 @@ public class ScannerViewModel extends AndroidViewModel {
 		// Scanning settings
 		final ScanSettings settings = new ScanSettings.Builder()
 				.setScanMode(ScanSettings.SCAN_MODE_LOW_LATENCY)
-				.setReportDelay(500)
+				.setReportDelay(100)
 				.setUseHardwareBatchingIfSupported(false)
 				.build();
 

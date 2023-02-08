@@ -62,7 +62,7 @@
             android:ellipsize="end"
             android:singleLine="true"
             android:textSize="18sp"
-            tools:text="Nordic_Blinky"/>
+            tools:text="WEDO_Wearable"/>
 
         <com.google.android.material.textview.MaterialTextView
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"

@@ -21,6 +21,6 @@
   -->
 
 <resources>
-	<string name="app_name">nRF Blinky</string>
-	<string name="feature_name">BLINKY</string>
+	<string name="app_name">WEDO-WATCH</string>
+	<string name="feature_name">WEARABLE</string>
 </resources>

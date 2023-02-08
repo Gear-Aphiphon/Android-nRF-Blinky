@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky;
+package no.nordicsemi.android.wearable;
 
 import android.Manifest;
 import android.bluetooth.BluetoothAdapter;
@@ -47,12 +47,12 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.SimpleItemAnimator;
-import no.nordicsemi.android.blinky.adapter.DevicesAdapter;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.databinding.ActivityScannerBinding;
-import no.nordicsemi.android.blinky.utils.Utils;
-import no.nordicsemi.android.blinky.viewmodels.ScannerStateLiveData;
-import no.nordicsemi.android.blinky.viewmodels.ScannerViewModel;
+import no.nordicsemi.android.wearable.adapter.DevicesAdapter;
+import no.nordicsemi.android.wearable.adapter.DiscoveredBluetoothDevice;
+import no.nordicsemi.android.wearable.databinding.ActivityScannerBinding;
+import no.nordicsemi.android.wearable.utils.Utils;
+import no.nordicsemi.android.wearable.viewmodels.ScannerStateLiveData;
+import no.nordicsemi.android.wearable.viewmodels.ScannerViewModel;
 
 public class ScannerActivity extends AppCompatActivity implements DevicesAdapter.OnItemClickListener {
     // This flag is false when the app is first started (cold start).
@@ -84,7 +84,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
         // On Android 12+ the splash screen will be animated, while on 6 - 11 will present a still
         // image. See more: https://developer.android.com/guide/topics/ui/splash-screen/
         //
-        // As nRF Blinky supports Android 4.3+, on older platforms a 9-patch image is presented
+        // As WEDO Wearable supports Android 4.3+, on older platforms a 9-patch image is presented
         // without the use of SplashScreen compat library.
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             final SplashScreen splashScreen = SplashScreen.installSplashScreen(this);
@@ -155,7 +155,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             openPermissionSettings();
         });
 
-        if (Utils.isSorAbove()) {
+        if (Utils.isSnowConeOrAbove()) {
             binding.noBluetoothPermission.actionGrantBluetoothPermission.setOnClickListener(v -> {
                 if (ActivityCompat.shouldShowRequestPermissionRationale(this,
                         Manifest.permission.BLUETOOTH_SCAN)) {
@@ -188,7 +188,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @Override
     public boolean onCreateOptionsMenu(@NonNull final Menu menu) {
         getMenuInflater().inflate(R.menu.filter, menu);
-        menu.findItem(R.id.filter_uuid).setChecked(scannerViewModel.isUuidFilterEnabled());
+        menu.findItem(R.id.filter_bond).setChecked(scannerViewModel.isBondFilterEnabled());
         menu.findItem(R.id.filter_nearby).setChecked(scannerViewModel.isNearbyFilterEnabled());
         return true;
     }
@@ -196,9 +196,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
     @Override
     public boolean onOptionsItemSelected(@NonNull final MenuItem item) {
         int itemId = item.getItemId();
-        if (itemId == R.id.filter_uuid) {
+        if (itemId == R.id.filter_bond) {
             item.setChecked(!item.isChecked());
-            scannerViewModel.filterByUuid(item.isChecked());
+            scannerViewModel.filterByBond(item.isChecked());
             return true;
         } else if (itemId == R.id.filter_nearby) {
             item.setChecked(!item.isChecked());
@@ -210,9 +210,9 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
 
     @Override
     public void onItemClick(@NonNull final DiscoveredBluetoothDevice device) {
-        final Intent controlBlinkIntent = new Intent(this, BlinkyActivity.class);
-        controlBlinkIntent.putExtra(BlinkyActivity.EXTRA_DEVICE, device);
-        startActivity(controlBlinkIntent);
+        final Intent controlWearableIntent = new Intent(this, WearableActivity.class);
+        controlWearableIntent.putExtra(WearableActivity.EXTRA_DEVICE, device);
+        startActivity(controlWearableIntent);
     }
 
     /**
@@ -232,7 +232,7 @@ public class ScannerActivity extends AppCompatActivity implements DevicesAdapter
             // Note: This has to be done before asking user to enable Bluetooth, as
             //       sending BluetoothAdapter.ACTION_REQUEST_ENABLE intent requires
             //       BLUETOOTH_CONNECT permission.
-            if (!Utils.isSorAbove() || Utils.isBluetoothScanPermissionGranted(this)) {
+            if (!Utils.isSnowConeOrAbove() || Utils.isBluetoothScanPermissionGranted(this)) {
                 binding.noBluetoothPermission.getRoot().setVisibility(View.GONE);
 
                 // Bluetooth must be enabled

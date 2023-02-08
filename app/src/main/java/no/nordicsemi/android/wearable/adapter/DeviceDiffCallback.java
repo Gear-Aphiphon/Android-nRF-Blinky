@@ -20,43 +20,23 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.profile.callback;
+package no.nordicsemi.android.wearable.adapter;
 
-import android.bluetooth.BluetoothDevice;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.DiffUtil;
 
-import no.nordicsemi.android.ble.callback.DataSentCallback;
-import no.nordicsemi.android.ble.callback.profile.ProfileDataCallback;
-import no.nordicsemi.android.ble.data.Data;
+public class DeviceDiffCallback extends DiffUtil.ItemCallback<DiscoveredBluetoothDevice> {
 
-@SuppressWarnings("ConstantConditions")
-public abstract class BlinkyLedDataCallback implements ProfileDataCallback, DataSentCallback, BlinkyLedCallback {
-    private static final byte STATE_OFF = 0x00;
-    private static final byte STATE_ON = 0x01;
+	DeviceDiffCallback() {
+	}
 
-    @Override
-    public void onDataReceived(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-        parse(device, data);
-    }
+	@Override
+	public boolean areItemsTheSame(@NonNull final DiscoveredBluetoothDevice oldItem, @NonNull final DiscoveredBluetoothDevice newItem) {
+		return oldItem.equals(newItem);
+	}
 
-    @Override
-    public void onDataSent(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-        parse(device, data);
-    }
-
-    private void parse(@NonNull final BluetoothDevice device, @NonNull final Data data) {
-        if (data.size() != 1) {
-            onInvalidDataReceived(device, data);
-            return;
-        }
-
-        final int state = data.getIntValue(Data.FORMAT_UINT8, 0);
-        if (state == STATE_ON) {
-            onLedStateChanged(device, true);
-        } else if (state == STATE_OFF) {
-            onLedStateChanged(device, false);
-        } else {
-            onInvalidDataReceived(device, data);
-        }
-    }
+	@Override
+	public boolean areContentsTheSame(@NonNull final DiscoveredBluetoothDevice oldItem, @NonNull final DiscoveredBluetoothDevice newItem) {
+		return oldItem.hasRssiLevelChanged();
+	}
 }

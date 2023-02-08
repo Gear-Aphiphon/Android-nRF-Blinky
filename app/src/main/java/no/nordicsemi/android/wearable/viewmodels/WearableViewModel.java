@@ -20,10 +20,11 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package no.nordicsemi.android.wearable.viewmodels;
 
 import android.app.Application;
 import android.bluetooth.BluetoothDevice;
+import android.net.Uri;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -32,34 +33,26 @@ import androidx.lifecycle.LiveData;
 
 import no.nordicsemi.android.ble.ConnectRequest;
 import no.nordicsemi.android.ble.livedata.state.ConnectionState;
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.profile.BlinkyManager;
+import no.nordicsemi.android.wearable.adapter.DiscoveredBluetoothDevice;
+import no.nordicsemi.android.wearable.profile.WearableManager;
 import no.nordicsemi.android.log.LogSession;
 import no.nordicsemi.android.log.Logger;
 
-public class BlinkyViewModel extends AndroidViewModel {
-	private final BlinkyManager blinkyManager;
+public class WearableViewModel extends AndroidViewModel {
+	private final WearableManager wearableManager;
 	private BluetoothDevice device;
 	@Nullable
 	private ConnectRequest connectRequest;
 
-	public BlinkyViewModel(@NonNull final Application application) {
+	public WearableViewModel(@NonNull final Application application) {
 		super(application);
 
 		// Initialize the manager.
-		blinkyManager = new BlinkyManager(getApplication());
+		wearableManager = new WearableManager(getApplication());
 	}
 
 	public LiveData<ConnectionState> getConnectionState() {
-		return blinkyManager.state;
-	}
-
-	public LiveData<Boolean> getButtonState() {
-		return blinkyManager.getButtonState();
-	}
-
-	public LiveData<Boolean> getLedState() {
-		return blinkyManager.getLedState();
+		return wearableManager.state;
 	}
 
 	/**
@@ -73,7 +66,7 @@ public class BlinkyViewModel extends AndroidViewModel {
 			device = target.getDevice();
 			final LogSession logSession = Logger
 					.newSession(getApplication(), null, target.getAddress(), target.getName());
-			blinkyManager.setLogger(logSession);
+			wearableManager.setLogger(logSession);
 			reconnect();
 		}
 	}
@@ -85,9 +78,9 @@ public class BlinkyViewModel extends AndroidViewModel {
 	 */
 	public void reconnect() {
 		if (device != null) {
-			connectRequest = blinkyManager.connect(device)
-					.retry(3, 100)
-					.useAutoConnect(false)
+			connectRequest = wearableManager.connect(device)
+					.retry(5, 100)
+					.useAutoConnect(true)
 					.then(d -> connectRequest = null);
 			connectRequest.enqueue();
 		}
@@ -100,23 +93,18 @@ public class BlinkyViewModel extends AndroidViewModel {
 		device = null;
 		if (connectRequest != null) {
 			connectRequest.cancelPendingConnection();
-		} else if (blinkyManager.isConnected()) {
-			blinkyManager.disconnect().enqueue();
+		} else if (wearableManager.isConnected()) {
+			wearableManager.disconnect().enqueue();
 		}
-	}
-
-	/**
-	 * Sends a command to turn ON or OFF the LED on the nRF5 DK.
-	 *
-	 * @param on true to turn the LED on, false to turn it OFF.
-	 */
-	public void setLedState(final boolean on) {
-		blinkyManager.turnLed(on);
 	}
 
 	@Override
 	protected void onCleared() {
 		super.onCleared();
 		disconnect();
+	}
+
+	public void onCreateFile(Uri uri) {
+		wearableManager.onCreateFile(uri);
 	}
 }

@@ -20,7 +20,7 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.adapter;
+package no.nordicsemi.android.wearable.adapter;
 
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -32,10 +32,10 @@ import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.ListAdapter;
 import androidx.recyclerview.widget.RecyclerView;
-import no.nordicsemi.android.blinky.R;
-import no.nordicsemi.android.blinky.ScannerActivity;
-import no.nordicsemi.android.blinky.databinding.DeviceItemBinding;
-import no.nordicsemi.android.blinky.viewmodels.DevicesLiveData;
+import no.nordicsemi.android.wearable.R;
+import no.nordicsemi.android.wearable.ScannerActivity;
+import no.nordicsemi.android.wearable.databinding.DeviceItemBinding;
+import no.nordicsemi.android.wearable.viewmodels.DevicesLiveData;
 
 public class DevicesAdapter extends ListAdapter<DiscoveredBluetoothDevice, DevicesAdapter.ViewHolder> {
 	private static final DiffUtil.ItemCallback<DiscoveredBluetoothDevice> DIFFER = new DeviceDiffCallback();

@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package no.nordicsemi.android.wearable.viewmodels;
 
 import android.util.Log;
 

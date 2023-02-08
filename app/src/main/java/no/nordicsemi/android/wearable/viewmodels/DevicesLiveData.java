@@ -20,18 +20,20 @@
  * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package no.nordicsemi.android.blinky.viewmodels;
+package no.nordicsemi.android.wearable.viewmodels;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
+
+import android.bluetooth.BluetoothDevice;
 import android.os.ParcelUuid;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import no.nordicsemi.android.blinky.adapter.DiscoveredBluetoothDevice;
-import no.nordicsemi.android.blinky.profile.BlinkyManager;
+import no.nordicsemi.android.wearable.adapter.DiscoveredBluetoothDevice;
+import no.nordicsemi.android.wearable.profile.WearableManager;
 import no.nordicsemi.android.support.v18.scanner.ScanRecord;
 import no.nordicsemi.android.support.v18.scanner.ScanResult;
 
@@ -42,18 +44,19 @@ import no.nordicsemi.android.support.v18.scanner.ScanResult;
  */
 @SuppressWarnings("unused")
 public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
-	private static final ParcelUuid FILTER_UUID = new ParcelUuid(BlinkyManager.LBS_UUID_SERVICE);
-	private static final int FILTER_RSSI = -50; // [dBm]
+	private static final ParcelUuid FILTER_UUID = new ParcelUuid(WearableManager.NUS_SERVICE_UUID);
+	private static final String FILTER_NAME = "wedo";
+	private static final int FILTER_RSSI = -60; // [dBm]
 
 	@NonNull
 	private final List<DiscoveredBluetoothDevice> devices = new ArrayList<>();
 	@Nullable
 	private List<DiscoveredBluetoothDevice> filteredDevices = null;
-	private boolean filterUuidRequired;
+	private boolean filterBondRequired;
 	private boolean filterNearbyOnly;
 
-	/* package */ DevicesLiveData(final boolean filterUuidRequired, final boolean filterNearbyOnly) {
-		this.filterUuidRequired = filterUuidRequired;
+	/* package */ DevicesLiveData(final boolean filterBondRequired, final boolean filterNearbyOnly) {
+		this.filterBondRequired = filterBondRequired;
 		this.filterNearbyOnly = filterNearbyOnly;
 	}
 
@@ -63,8 +66,8 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
 		postValue(null);
 	}
 
-	/* package */  boolean filterByUuid(final boolean uuidRequired) {
-		filterUuidRequired = uuidRequired;
+	/* package */  boolean filterByBond(final boolean bondRequired) {
+		filterBondRequired = bondRequired;
 		return applyFilter();
 	}
 
@@ -90,7 +93,7 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
 
 		// Return true if the device was on the filtered list or is to be added.
 		return (filteredDevices != null && filteredDevices.contains(device))
-				|| (matchesUuidFilter(result) && matchesNearbyFilter(device.getHighestRssi()));
+				|| (matchesNameFilter(result) && matchesBondFilter(result) && matchesNearbyFilter(device.getHighestRssi()));
     }
 
 	/**
@@ -109,7 +112,7 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
 		final List<DiscoveredBluetoothDevice> tmp = new ArrayList<>();
 		for (final DiscoveredBluetoothDevice device : devices) {
 			final ScanResult result = device.getScanResult();
-			if (matchesUuidFilter(result) && matchesNearbyFilter(device.getHighestRssi())) {
+			if (matchesNameFilter(result) && matchesBondFilter(result) && matchesNearbyFilter(device.getHighestRssi())) {
 				tmp.add(device);
 			}
 		}
@@ -135,19 +138,15 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
 	}
 
 	@SuppressWarnings("SimplifiableIfStatement")
-	private boolean matchesUuidFilter(@NonNull final ScanResult result) {
-		if (!filterUuidRequired)
+	private boolean matchesBondFilter(@NonNull final ScanResult result) {
+		if (!filterBondRequired)
 			return true;
 
 		final ScanRecord record = result.getScanRecord();
 		if (record == null)
 			return false;
 
-		final List<ParcelUuid> uuids = record.getServiceUuids();
-		if (uuids == null)
-			return false;
-
-		return uuids.contains(FILTER_UUID);
+		return (result.getDevice().getBondState() == BluetoothDevice.BOND_BONDED);
 	}
 
 	@SuppressWarnings("SimplifiableIfStatement")
@@ -156,5 +155,15 @@ public class DevicesLiveData extends LiveData<List<DiscoveredBluetoothDevice>> {
 			return true;
 
 		return rssi >= FILTER_RSSI;
+	}
+
+	@SuppressWarnings("SimplifiableIfStatement")
+	private boolean matchesNameFilter(@NonNull final ScanResult result) {
+		final ScanRecord record = result.getScanRecord();
+		if (record == null)
+			return false;
+
+		final String deviceName = result.getDevice().getName();
+		return (deviceName != null && deviceName.startsWith(FILTER_NAME));
 	}
 }
